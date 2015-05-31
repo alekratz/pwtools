@@ -9,13 +9,30 @@ use trtable::TrTable;
 /// Permutes over a single term's possible alternate characters
 ///
 fn permute(index: usize, term: &str, built: String, trtab: &TrTable) {
-  let mut possible = 1;
-  for c in term.chars() {
-    let list = trtab.get(c)
-      .unwrap();
-    possible *= list.len();
+  // base case
+  if index == term.len() {
+    println!("{}", built);
+    return;
   }
-  println!("{} possible combinations", possible);
+
+  let c: char = term.chars()
+    .nth(index)
+    .expect("");
+  
+  let list = trtab.get(c);
+  if list == None {
+    // just add on the next string to the built and keep going
+    let mut new_built: String = (&built).to_string();
+    new_built.push(c);
+    permute(index + 1, &term, new_built, &trtab);
+  } else {
+    // go through all of the possibilities
+    let u_list = list.unwrap();
+    for append in u_list {
+      let mut new_built: String = (&built).to_string() + append;
+      permute(index + 1, &term, new_built, &trtab);
+    }
+  }
 }
 
 fn print_usage(program: &str, opts: Options) {
@@ -58,6 +75,4 @@ fn main() {
       None => println!("You must specify a table file with the permute option")
     }
   }
-
-
 }
