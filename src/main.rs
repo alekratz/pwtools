@@ -9,6 +9,13 @@ use trtable::TrTable;
 /// Permutes over a single term's possible alternate characters
 ///
 fn permute(index: usize, term: &str, built: String, trtab: &TrTable) {
+  let mut possible = 1;
+  for c in term.chars() {
+    let list = trtab.get(c)
+      .unwrap();
+    possible *= list.len();
+  }
+  println!("{} possible combinations", possible);
 }
 
 fn print_usage(program: &str, opts: Options) {
@@ -43,8 +50,10 @@ fn main() {
     match table_file {
       Some(trtab_fname) => {
         // load the file
-        let trtab = TrTable::load(&trtab_fname);
-        //permute(0, &permute_str, "".to_string());
+        let trtab = TrTable::load(&trtab_fname)
+          .ok()
+          .unwrap();
+        permute(0, &permute_str, "".to_string(), &trtab);
       },
       None => println!("You must specify a table file with the permute option")
     }
