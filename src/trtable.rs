@@ -23,6 +23,14 @@ impl TrTable {
     }
   }
 
+  pub fn contains_key(&self, letter: char) -> bool {
+    self.table.contains_key(&letter)
+  }
+
+  pub fn get(&self, letter: char) -> Option<&Vec<String>> {
+    self.table.get(&letter)
+  }
+
   pub fn load(fname: &str) -> Result<TrTable, &'static str> {
     // open and load the file
     let mut fp = File::open(&fname)
