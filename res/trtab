@@ -1,0 +1,56 @@
+# Translation table file
+# Syntax: 
+#     letter: substr1 substr2
+
+a: a A 4
+b: b B 8
+c: c C < ( { [
+d: d D
+e: e E 3
+f: f F |=
+g: g G
+h: h H |-|
+i: i I l 1 |
+j: j J
+k: k K |<
+l: l L I 1 |
+m: m M |\/|
+n: n N |\|
+o: o O 0
+p: p P
+q: q Q
+r: r R
+s: s S 5
+t: t T +
+u: u U
+v: v V
+w: w W vv
+x: x X ><
+y: y Y
+z: z Z
+A: A a
+B: B b
+C: C c
+D: D d
+E: E e
+F: F f
+G: G g
+H: H h
+I: I i
+J: J j
+K: K k
+L: L l
+M: M m
+N: N n
+O: O o
+P: P p
+Q: Q q
+R: R r
+S: S s
+T: T t
+U: U u
+V: V v
+W: W w
+X: X x
+Y: Y y
+Z: Z z
