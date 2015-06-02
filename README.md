@@ -1,13 +1,14 @@
 # pwtools
 Permutation writing tools. This is a utility for generating permutations, either based on a term or just all possible permutations of a given length.
 
-# Features
-Currently, pwtools supports the following:
+# Roadmap
 
-*  Permutations over a specified term
+Key:
+* ~~Finished feature~~
+* Unfinished/unimplemented feature
 
 Planned features:
-
+* ~~Permutations over a specified term~~
 * Permutations over a set of characters, for different ranges
 
 # License
