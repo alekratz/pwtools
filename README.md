@@ -9,7 +9,8 @@ Key:
 
 Planned features:
 * ~~Permutations over a specified term~~
-* Permutations over a set of characters, for different ranges
+* ~~Permutations over a set of characters, for different ranges~~
+* Multithreaded support
 
 # License
 GPL v3 Affero
