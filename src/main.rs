@@ -29,7 +29,7 @@ fn permute(index: usize, term: &str, built: String, trtab: &TrTable) {
     // go through all of the possibilities
     let u_list = list.unwrap();
     for append in u_list {
-      let mut new_built: String = (&built).to_string() + append;
+      let new_built: String = (&built).to_string() + append;
       permute(index + 1, &term, new_built, &trtab);
     }
   }

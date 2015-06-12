@@ -68,7 +68,7 @@ impl TrTable {
           .nth(0)
           .unwrap();
         // get all the words as a Vec<String>
-        let mut words: Vec<String> = value.split(" ")
+        let words: Vec<String> = value.split(" ")
           .map(|s| s.to_string())
           .collect();
 
