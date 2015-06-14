@@ -20,8 +20,12 @@ extern crate char_iter;
 
 mod trtable;
 
+use std::clone::Clone;
+use std::io;
+use std::io::Write;
+use std::{env, thread};
+use std::sync::mpsc::{channel, Receiver, Sender};
 use getopts::Options;
-use std::env;
 use trtable::TrTable;
 
 /// Permutes over a single term's possible alternate characters
@@ -53,17 +57,20 @@ fn permute(index: usize, term: &str, built: String, trtab: &TrTable) {
   }
 }
 
-fn all_combos(chars: &Vec<char>, count: usize, built: String) {
+fn all_combos(tx: &Sender<String>, chars: &Vec<char>, count: usize, built: String) {
   // base case
   if count == 0 {
-    println!("{}", built);
+    //drop(tx.send(&built));
+    let stdout = io::stdout();
+    writeln!(&mut stdout.lock(), "{}", built);
+    //guard.flush();
     return;
   }
 
   for letter in chars {
     let mut new_built: String = (&built).to_string();
     new_built.push(*letter);
-    all_combos(&chars, count - 1, new_built);
+    all_combos(tx, &chars, count - 1, new_built);
   }
 }
 
@@ -86,6 +93,8 @@ fn main() {
   opts.optopt("p", "permute", "permute over a term with similar letters. Use the -t option to specify a table file", 
     "TERM");
   opts.optopt("t", "trtab", "translation table file, in YAML format. Required with the -p option.", "FILENAME");
+
+  opts.optopt("j", "threads", "number of threads to use. Default is 1.", "NUM_THREADS");
   opts.optflag("h", "help", "print this menu");
   let matches = match opts.parse(&args[1..]) {
     Ok(m) => { m },
@@ -99,6 +108,10 @@ fn main() {
   }
 
   let table_file = matches.opt_str("t");
+  let num_threads = match matches.opt_str("j") {
+    Some(n_jobs) => n_jobs.parse::<usize>().unwrap(),
+    None => 1
+  };
 
   // permutation
   if let Some(permute_str) = matches.opt_str("p") {
@@ -112,8 +125,9 @@ fn main() {
       },
       None => println!("You must specify a table file with the permute option")
     }
+  }
   // all combinations 
-  } else if let Some(combos) = matches.opt_str("c") {
+  if let Some(combos) = matches.opt_str("c") {
     let counts = combos.split(",")
       .map(|n| n.parse::<usize>().unwrap());
 
@@ -156,8 +170,50 @@ fn main() {
       }
     }
 
+    // threads that are currently spawned
+    let mut receivers: Vec<Receiver<String>> = Vec::new();
+    let mut received = 0;
+
     for n in counts {
-      all_combos(&all_chars, n, String::new());
+      for letter in &all_chars {
+        // get whether we have any thread slots open; if not, then
+        // block until a thread finishes.
+        while receivers.len() == num_threads {
+          let mut offset = 0;
+          for index in 0 .. receivers.len() {
+            let remove = match receivers[index - offset].try_recv() {
+              Ok(s) => if s == "" {
+                true
+              } else {
+                println!("{}", s);
+                false
+              },
+              Err(_) => false,
+            };
+
+            if remove {
+              receivers.remove(index - offset);
+            }
+          }
+          thread::sleep_ms(1);
+        }
+
+        // set up a new channel
+        let (tx, rx) = channel();
+        // create an intermediate var for the all_chars so we don't have to copy it fifty million times
+        let all_chars_imdt = all_chars.clone();
+        let l = *letter;
+        let child = thread::spawn(move || {
+          // shift ownership to the thread
+          let all_chars_dup = all_chars_imdt;
+          let mut new_built = String::new();
+          
+          new_built.push(l);
+          all_combos(&tx, &all_chars_dup, n - 1, new_built);
+          tx.send(String::new());
+        });
+        receivers.push(rx);
+      }
     }
   }
 }
