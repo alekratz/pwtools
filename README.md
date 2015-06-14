@@ -1,6 +1,38 @@
 # pwtools
 Permutation writing tools. This is a utility for generating permutations, either based on a term or just all possible permutations of a given length.
 
+## Compiling
+Do the usual `cargo build`.
+
+## Using
+You can either generate a lot of permutations of a word based on a translation table, or you can generate all possible combinations of N letters.
+
+To do permutations you use the -p option to specify the term to permute over, and -t to specify the translation table. Both flags are required. A translation table is provided in the res/ directory; it uses YAML format.
+
+For example, running
+
+`target/debug/pwtools -p cat -t res/trtab`
+
+will produce the output
+
+```
+cat
+caT
+ca+
+cAt
+cAT
+cA+
+...
+```
+
+To do combinations, you use the `-c` option to specify the length of the word to use. If you want to generate more than just one set N-letter words, you may separate these counts using commas (no spaces); e.g. 3,4,5. You can also filter out specific sets of letters using the `--no-symbols`, `--no-numbers`, `--no-upper`, and `--no-lower` flags.
+
+For example, running
+
+`target/debug/pwtools -c 3,4,5 --no-{numbers,upper,symbols}`
+
+will generate all combinations of 3, 4, and 5 lower-case letters.
+
 # Roadmap
 Key:
 * ~~Finished feature~~
