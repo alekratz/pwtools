@@ -11,6 +11,8 @@ Planned features:
 * ~~Permutations over a specified term~~
 * ~~Permutations over a set of characters, for different ranges~~
 * Multithreaded support
+  * ~~Combinations~~
+  * Permutations
 
 # License
 GPL v3 Affero

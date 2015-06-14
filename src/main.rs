@@ -20,9 +20,6 @@ extern crate char_iter;
 
 mod trtable;
 
-use std::clone::Clone;
-use std::io;
-use std::io::Write;
 use std::{env, thread};
 use std::sync::mpsc::{channel, Receiver};
 use getopts::Options;
@@ -60,10 +57,7 @@ fn permute(index: usize, term: &str, built: String, trtab: &TrTable) {
 fn all_combos(chars: &Vec<char>, count: usize, built: String) {
   // base case
   if count == 0 {
-    //drop(tx.send(&built));
-    let stdout = io::stdout();
-    drop(writeln!(&mut stdout.lock(), "{}", built));
-    //guard.flush();
+    println!("{}", &built);
     return;
   }
 
@@ -171,21 +165,21 @@ fn main() {
     }
 
     // threads that are currently spawned
-    let mut receivers: Vec<Receiver<i32>> = Vec::new();
+    let mut threads: Vec<(thread::JoinHandle<()>, Receiver<i32>)> = Vec::new();
 
     for n in counts {
       for letter in &all_chars {
         // get whether we have any thread slots open; if not, then
         // block until a thread finishes.
-        while receivers.len() == num_threads {
+        while threads.len() == num_threads {
           let mut offset = 0;
-          for index in 0 .. receivers.len() {
-            let remove = receivers[index - offset]
+          for index in 0 .. threads.len() {
+            let remove = threads[index - offset].1
               .try_recv()
               .is_ok();
 
             if remove {
-              receivers.remove(index - offset);
+              threads.remove(index - offset);
               offset += 1;
             }
           }
@@ -206,8 +200,13 @@ fn main() {
           all_combos(&all_chars_dup, n - 1, new_built);
           drop(tx.send(0));
         });
-        receivers.push(rx);
+        threads.push((child, rx));
       }
+    }
+
+    // let the rest of the threads finish up
+    for (th, _) in threads {
+      drop(th.join());
     }
   }
 }
