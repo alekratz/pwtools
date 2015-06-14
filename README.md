@@ -45,6 +45,9 @@ Planned features:
   * ~~Combinations~~
   * Permutations
 
+## Contributing
+Feel free to fork me/send me a pull request/create new issues. I'll get to them as fast as I can.
+
 # Performance
 Below are two examples of timing the performance of multithreaded combination generation. The first one saves directly to /dev/null, and you can tell it is much faster to use four threads than to use one.
 
