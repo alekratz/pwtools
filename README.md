@@ -2,7 +2,7 @@
 Permutation writing tools. This is a utility for generating permutations, either based on a term or just all possible permutations of a given length.
 
 ## Compiling
-Do the usual `cargo build`.
+Do the usual `cargo build`. Requires rust nightly.
 
 ## Using
 You can either generate a lot of permutations of a word based on a translation table, or you can generate all possible combinations of N letters.
