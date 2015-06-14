@@ -24,7 +24,7 @@ use std::clone::Clone;
 use std::io;
 use std::io::Write;
 use std::{env, thread};
-use std::sync::mpsc::{channel, Receiver, Sender};
+use std::sync::mpsc::{channel, Receiver};
 use getopts::Options;
 use trtable::TrTable;
 
@@ -57,12 +57,12 @@ fn permute(index: usize, term: &str, built: String, trtab: &TrTable) {
   }
 }
 
-fn all_combos(tx: &Sender<String>, chars: &Vec<char>, count: usize, built: String) {
+fn all_combos(chars: &Vec<char>, count: usize, built: String) {
   // base case
   if count == 0 {
     //drop(tx.send(&built));
     let stdout = io::stdout();
-    writeln!(&mut stdout.lock(), "{}", built);
+    drop(writeln!(&mut stdout.lock(), "{}", built));
     //guard.flush();
     return;
   }
@@ -70,7 +70,7 @@ fn all_combos(tx: &Sender<String>, chars: &Vec<char>, count: usize, built: Strin
   for letter in chars {
     let mut new_built: String = (&built).to_string();
     new_built.push(*letter);
-    all_combos(tx, &chars, count - 1, new_built);
+    all_combos(&chars, count - 1, new_built);
   }
 }
 
@@ -171,8 +171,7 @@ fn main() {
     }
 
     // threads that are currently spawned
-    let mut receivers: Vec<Receiver<String>> = Vec::new();
-    let mut received = 0;
+    let mut receivers: Vec<Receiver<i32>> = Vec::new();
 
     for n in counts {
       for letter in &all_chars {
@@ -181,18 +180,13 @@ fn main() {
         while receivers.len() == num_threads {
           let mut offset = 0;
           for index in 0 .. receivers.len() {
-            let remove = match receivers[index - offset].try_recv() {
-              Ok(s) => if s == "" {
-                true
-              } else {
-                println!("{}", s);
-                false
-              },
-              Err(_) => false,
-            };
+            let remove = receivers[index - offset]
+              .try_recv()
+              .is_ok();
 
             if remove {
               receivers.remove(index - offset);
+              offset += 1;
             }
           }
           thread::sleep_ms(1);
@@ -209,8 +203,8 @@ fn main() {
           let mut new_built = String::new();
           
           new_built.push(l);
-          all_combos(&tx, &all_chars_dup, n - 1, new_built);
-          tx.send(String::new());
+          all_combos(&all_chars_dup, n - 1, new_built);
+          drop(tx.send(0));
         });
         receivers.push(rx);
       }
