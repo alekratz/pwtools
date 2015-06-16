@@ -22,7 +22,7 @@ mod trtable;
 
 use std::{env, thread};
 use std::sync::mpsc::{channel, Receiver};
-use getopts::Options;
+use getopts::{Options, Matches};
 use trtable::TrTable;
 
 /// Permutes over a single term's possible alternate characters
@@ -68,15 +68,7 @@ fn all_combos(chars: &Vec<char>, count: usize, built: String) {
   }
 }
 
-fn print_usage(program: &str, opts: Options) {
-  let brief = format!("Usage: {} [options]", program);
-  print!("{}", opts.usage(&brief));
-}
-
-fn main() {
-  let args: Vec<String> = env::args().collect();
-  let program = args[0].clone();
-
+fn parse_opts(args: &Vec<String>) -> (Options, Matches) {
   let mut opts = Options::new();
   opts.optopt("c", "combos", "iterate through all possible printable combinations of N letters. You may specify a comma separated list, e.g. 1,2,4,5", 
     "N");
@@ -94,14 +86,27 @@ fn main() {
     Ok(m) => { m },
     Err(f) => { panic!(f.to_string()) },
   };
+  (opts, matches)
+}
 
+fn main() {
+  let args: Vec<String> = env::args().collect();
+  let (opts, matches) = parse_opts(&args);
+
+  // print help and exit
   if matches.opt_present("h") {
-    // print help and exit
-    print_usage(&program, opts);
+    let program = match args.get(0) {
+      Some(s) => s,
+      None => unreachable!(),
+    };
+    let brief = format!("Usage: {} [options]", program);
+    print!("{}", opts.usage(&brief));
     return;
   }
 
+  // get the table file if it's there
   let table_file = matches.opt_str("t");
+  // get the number of threads; if it doesn't exist, default to 1
   let num_threads = match matches.opt_str("j") {
     Some(n_jobs) => n_jobs.parse::<usize>().unwrap(),
     None => 1
