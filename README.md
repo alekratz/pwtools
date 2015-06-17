@@ -1,5 +1,5 @@
 # pwtools
-Permutation writing tools. This is a utility for generating permutations, either based on a term or just all possible permutations of a given length.
+Permutation writing tools. This is a utility for generating permutations, either based on a term or just all possible ~~permutations~~ combinations of a given length.
 
 ## Compiling
 Do the usual `cargo build`. Requires rust nightly.
