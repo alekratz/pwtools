@@ -127,91 +127,95 @@ fn main() {
   }
   // all combinations 
   if let Some(combos) = matches.opt_str("c") {
-    let counts = combos.split(",")
-      .map(|n| n.parse::<usize>().unwrap());
+    do_all_combos(matches, &combos, num_threads);
+  }
+}
 
-    let mut all_chars = Vec::new();
-    // upper case letters
-    if !matches.opt_present("no-upper") {
-      for l in char_iter::new('\x41', '\x5a') {
-        all_chars.push(l);
-      }
-    }
-    // lower case letters
-    if !matches.opt_present("no-lower") {
-      for l in char_iter::new('\x61', '\x7a') {
-        all_chars.push(l);
-      }
-    }
-    // numbers
-    if !matches.opt_present("no-numbers") {
-      for l in char_iter::new('\x30', '\x39') {
-        all_chars.push(l);
-      }
-    }
-    // symbols
-    if !matches.opt_present("no-symbols") {
-      // <space> to /
-      for l in char_iter::new('\x20', '\x2F') {
-        all_chars.push(l);
-      }
-      // : to @
-      for l in char_iter::new('\x3a', '\x40') {
-        all_chars.push(l);
-      }
-      // [ to `
-      for l in char_iter::new('\x5b', '\x60') {
-        all_chars.push(l);
-      }
-      // { to ~
-      for l in char_iter::new('\x7b', '\x7e') {
-        all_chars.push(l);
-      }
-    }
+fn do_all_combos(matches: Matches, combos: &String, num_threads: usize) {
+  let counts = combos.split(",")
+    .map(|n| n.parse::<usize>().unwrap());
 
-    // threads that are currently spawned
-    let mut threads: Vec<(thread::JoinHandle<()>, Receiver<i32>)> = Vec::new();
+  let mut all_chars = Vec::new();
+  // upper case letters
+  if !matches.opt_present("no-upper") {
+    for l in char_iter::new('\x41', '\x5a') {
+      all_chars.push(l);
+    }
+  }
+  // lower case letters
+  if !matches.opt_present("no-lower") {
+    for l in char_iter::new('\x61', '\x7a') {
+      all_chars.push(l);
+    }
+  }
+  // numbers
+  if !matches.opt_present("no-numbers") {
+    for l in char_iter::new('\x30', '\x39') {
+      all_chars.push(l);
+    }
+  }
+  // symbols
+  if !matches.opt_present("no-symbols") {
+    // <space> to /
+    for l in char_iter::new('\x20', '\x2F') {
+      all_chars.push(l);
+    }
+    // : to @
+    for l in char_iter::new('\x3a', '\x40') {
+      all_chars.push(l);
+    }
+    // [ to `
+    for l in char_iter::new('\x5b', '\x60') {
+      all_chars.push(l);
+    }
+    // { to ~
+    for l in char_iter::new('\x7b', '\x7e') {
+      all_chars.push(l);
+    }
+  }
 
-    for n in counts {
-      for letter in &all_chars {
-        // get whether we have any thread slots open; if not, then
-        // block until a thread finishes.
-        while threads.len() == num_threads {
-          let mut offset = 0;
-          for index in 0 .. threads.len() {
-            let remove = threads[index - offset].1
-              .try_recv()
-              .is_ok();
+  // threads that are currently spawned
+  let mut threads: Vec<(thread::JoinHandle<()>, Receiver<i32>)> = Vec::new();
 
-            if remove {
-              threads.remove(index - offset);
-              offset += 1;
-            }
+  for n in counts {
+    for letter in &all_chars {
+      // get whether we have any thread slots open; if not, then
+      // block until a thread finishes.
+      while threads.len() == num_threads {
+        let mut offset = 0;
+        for index in 0 .. threads.len() {
+          let remove = threads[index - offset].1
+            .try_recv()
+            .is_ok();
+
+          if remove {
+            threads.remove(index - offset);
+            offset += 1;
           }
-          thread::sleep_ms(1);
         }
-
-        // set up a new channel
-        let (tx, rx) = channel();
-        // create an intermediate var for the all_chars so we don't have to copy it fifty million times
-        let all_chars_imdt = all_chars.clone();
-        let l = *letter;
-        let child = thread::spawn(move || {
-          // shift ownership to the thread
-          let all_chars_dup = all_chars_imdt;
-          let mut new_built = String::new();
-          
-          new_built.push(l);
-          all_combos(&all_chars_dup, n - 1, new_built);
-          drop(tx.send(0));
-        });
-        threads.push((child, rx));
+        thread::sleep_ms(1);
       }
-    }
 
-    // let the rest of the threads finish up
-    for (th, _) in threads {
-      drop(th.join());
+      // set up a new channel
+      let (tx, rx) = channel();
+      // create an intermediate var for the all_chars so we don't have to copy it fifty million times
+      let all_chars_imdt = all_chars.clone();
+      let l = *letter;
+      let child = thread::spawn(move || {
+        // shift ownership to the thread
+        let all_chars_dup = all_chars_imdt;
+        let mut new_built = String::new();
+        
+        new_built.push(l);
+        all_combos(&all_chars_dup, n - 1, new_built);
+        drop(tx.send(0));
+      });
+      threads.push((child, rx));
     }
+  }
+
+  // let the rest of the threads finish up
+  for (th, _) in threads {
+    drop(th.join());
   }
 }
