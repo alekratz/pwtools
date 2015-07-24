@@ -2,7 +2,7 @@
 Permutation writing tools. This is a utility for generating permutations, either based on a term or just all possible ~~permutations~~ combinations of a given length.
 
 ## Compiling
-Do the usual `cargo build`. Requires rust nightly.
+Do the usual `cargo build`. Requires rust nightly, at least version 1.2.
 
 ## Using
 You can either generate a lot of permutations of a word based on a translation table, or you can generate all possible combinations of N letters.
@@ -44,6 +44,7 @@ Planned features:
 * Multithreaded support
   * ~~Combinations~~
   * Permutations
+* Experiment with buffered output to speed up performance and writing permutations to the disk
 
 ## Contributing
 Feel free to fork me/send me a pull request/create new issues. I'll get to them as fast as I can.
@@ -63,7 +64,7 @@ I don't have screenshots for these, but the same thing happens if you pipe it to
 [real-file-timing]: https://github.com/alekratz/pwtools/raw/master/img/real-file-timing.png
 
 # Disclaimer
-Yes, this tool is specifically for permuting over a specified term. This is very similar to password generation. **However, you should not abuse this software. Do not use this software to break the law, including (but not limited to) hacking and breaking into systems without prior authorization to do so.**
+Yes, this tool is specifically for permuting over a specified term. This is very similar to password generation. **However, you should not abuse this software. Do not use this software to break the law, including (but not limited to) hacking and breaking into systems without prior authorization to do so. This software is provided without warranty. If you decide it is in your best interests to use it, you are the one responsible for the consequences, good or bad.**
 
 This set of tools is for **educational** and **constructive** purposes only. This means that if you are a student of cryptography or cryptology and wanted to study tools and maybe complete a lab using these tools - you are more than welcome to do so (provided your lab allows you to use 3rd party tools). Likewise, if you are a cryptographer or cryptologist trying to assess the ability to break into a system - you are more than welcome to use this tool.
 
